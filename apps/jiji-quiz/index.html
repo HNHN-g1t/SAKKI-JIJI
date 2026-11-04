@@ -1,0 +1,298 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>時事ニュースクイズ</title>
+<!-- ファビコンは公開サイトの直下（site/ から tools/build_site.py で配置）。?v= はスマホの覚え込み対策で、差し替えたら上げる -->
+<link rel="icon" href="../favicon.ico?v=2" sizes="any">
+<link rel="icon" href="../favicon-32.png?v=2" type="image/png" sizes="32x32">
+<link rel="icon" href="../icon-192.png?v=2" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png?v=2">
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Dela+Gothic+One&display=swap">
+<style>
+/* 配色は SAKKI-MAN の地図クイズと同じ（ブランド黄と墨）。色はこの3か所の変数でだけ定義する */
+:root{
+  --brand:#FED003; --on-brand:#282727;
+  --ink:#282727; --paper:#FFFFFF; --cream:#FEF3E6; --bg:#ECEBE9;
+  --muted:#5E5A58; --line-soft:#CFCCCA;
+  --ok:#1E7B45; --ng:#C23A2B; --on-strong:#FFFFFF; --ok-soft:#CBEBD6; --ng-soft:#F9D4CD;
+  --scrim:#282727B3;
+  --display:"Dela Gothic One","Hiragino Sans","Yu Gothic",sans-serif;
+  --body:"BIZ UDPGothic","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic","Meiryo",sans-serif;
+  --fs12:12px; --fs14:14px; --fs16:16px; --fs20:20px; --fs28:28px; --fs40:40px;
+  --s4:4px; --s8:8px; --s12:12px; --s16:16px; --s24:24px; --s32:32px;
+  --r-btn:14px; --r-sheet:20px; --r-pill:999px; --bw:2.5px; --tap:48px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ink:#FEF3E6; --paper:#232222; --cream:#3A3632; --bg:#141313;
+  --muted:#C8BEB1; --line-soft:#4D4A47; --ok-soft:#24543A; --ng-soft:#6A2A22; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --ink:#FEF3E6; --paper:#232222; --cream:#3A3632; --bg:#141313;
+  --muted:#C8BEB1; --line-soft:#4D4A47; --ok-soft:#24543A; --ng-soft:#6A2A22; color-scheme:dark}
+
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:var(--fs16);-webkit-tap-highlight-color:transparent}
+.app{min-height:100dvh;max-width:640px;margin:0 auto;background:var(--paper);display:flex;flex-direction:column}
+
+/* 上の帯 */
+.headwrap{position:sticky;top:0;z-index:2;background:var(--paper)}
+.top{display:flex;align-items:center;gap:var(--s8);min-height:64px;box-sizing:border-box;
+  padding:var(--s8) max(var(--s16),env(safe-area-inset-right,0px)) var(--s8) max(var(--s16),env(safe-area-inset-left,0px))}
+.brand{flex:1;min-width:0;font-family:var(--display);font-size:15px;line-height:1.3}
+.brand small{display:block;font-family:var(--body);font-weight:700;font-size:var(--fs12);color:var(--muted)}
+.meta{flex:1;min-width:0;font-weight:700}
+.meta .nm{display:block;font-size:var(--fs12);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meta .num{display:block;font-size:var(--fs16);font-variant-numeric:tabular-nums}
+
+/* 進み具合 */
+.pbar{display:flex;align-items:flex-end;gap:2px;padding:0 var(--s16) var(--s8)}
+.pbar:empty{display:none}
+.pbar i{flex:1;height:6px;border-radius:var(--r-pill);background:var(--line-soft)}
+.pbar i.now{height:12px;background:var(--brand);box-shadow:inset 0 0 0 1.5px var(--ink)}
+.pbar i.ok{background:var(--ok)} .pbar i.ng{background:var(--ng)}
+
+/* ボタンは3種類：主要（黄＋墨の枠＋影）／補助（白＋墨の枠）／最小限（文字だけ） */
+.btn,.iconbtn,.course,.choice{box-sizing:border-box;min-height:var(--tap);border:var(--bw) solid var(--ink);border-radius:var(--r-btn);background:var(--paper);color:var(--ink);font-family:var(--body);font-weight:700;font-size:var(--fs16);cursor:pointer}
+.btn:active,.iconbtn:active,.course:active,.choice:active{transform:translateY(2px)}
+.btn.primary{background:var(--brand);color:var(--on-brand);box-shadow:0 4px 0 var(--ink)}
+.btn.primary:active{transform:translateY(4px);box-shadow:none}
+.btn{padding:0 var(--s16)}
+.iconbtn{flex:none;min-width:44px;height:44px;padding:0 var(--s8);display:grid;place-items:center;font-size:11px;line-height:1}
+.iconbtn svg{width:20px;height:20px}
+.linkbtn{border:0;background:none;color:var(--ink);font:700 var(--fs14) var(--body);text-decoration:underline;cursor:pointer;min-height:var(--tap);padding:0 var(--s4)}
+.btn:focus-visible,.iconbtn:focus-visible,.course:focus-visible,.choice:focus-visible,.linkbtn:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+
+main{flex:1;padding:var(--s16) max(var(--s16),env(safe-area-inset-right,0px)) calc(var(--s32) + env(safe-area-inset-bottom,0px)) max(var(--s16),env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:var(--s16)}
+
+/* タイトル */
+.hero{background:var(--brand);color:var(--on-brand);border:var(--bw) solid var(--ink);border-radius:var(--r-sheet);padding:var(--s24) var(--s16);text-align:center}
+.hero h1{margin:0;font-family:var(--display);font-weight:400;font-size:var(--fs28);line-height:1.3}
+.hero p{margin:var(--s8) 0 0;font-weight:700;font-size:var(--fs14)}
+.sec{margin:var(--s8) 0 0;font-size:var(--fs14);color:var(--muted)}
+.courses{display:grid;gap:var(--s12)}
+.course{display:flex;align-items:center;gap:var(--s12);text-align:left;padding:var(--s12) var(--s16)}
+.course .t{flex:1;min-width:0}
+.course b{display:block;font-size:var(--fs20)}
+.course span{display:block;font-weight:400;font-size:var(--fs14);color:var(--muted);margin-top:2px}
+.course .rec{flex:none;font-size:var(--fs14);text-align:right;font-variant-numeric:tabular-nums}
+.course .rec .crown{font-size:var(--fs20)}
+.course.all{background:var(--cream)}
+.foot{display:flex;justify-content:center;gap:var(--s16);flex-wrap:wrap}
+.note{font-size:var(--fs12);color:var(--muted);line-height:1.6;margin:0}
+
+/* 出題 */
+.when{align-self:flex-start;background:var(--ink);color:var(--paper);font-weight:700;font-size:var(--fs12);padding:var(--s4) var(--s12);border-radius:var(--r-pill)}
+.q{margin:0;font-weight:700;font-size:var(--fs20);line-height:1.6}
+.choices{display:grid;gap:var(--s8)}
+.choice{display:flex;align-items:center;gap:var(--s12);text-align:left;padding:var(--s12);font-size:var(--fs16);line-height:1.4}
+.choice .k{flex:none;width:28px;height:28px;border-radius:50%;border:2px solid var(--ink);display:grid;place-items:center;font-size:var(--fs14)}
+.choice[disabled]{cursor:default;transform:none}
+.choice.ok{background:var(--ok);color:var(--on-strong);border-color:var(--ok)}
+.choice.ok .k{border-color:var(--on-strong)}
+.choice.ng{background:var(--ng);color:var(--on-strong);border-color:var(--ng)}
+.choice.ng .k{border-color:var(--on-strong)}
+.choice.dim{opacity:.5}
+
+/* 答えたあと */
+.fb{border:var(--bw) solid var(--ink);border-radius:var(--r-sheet);padding:var(--s16);display:flex;flex-direction:column;gap:var(--s12)}
+.fb.ok{background:var(--ok-soft)} .fb.ng{background:var(--ng-soft)}
+.fb .head{font-family:var(--display);font-size:var(--fs28);line-height:1}
+.fb .ans{font-weight:700}
+.fb .ans em{font-style:normal;box-shadow:inset 0 -.45em 0 var(--brand)}
+.fb p{margin:0;line-height:1.7}
+.link{background:var(--paper);border-radius:var(--r-btn);padding:var(--s12)}
+.link b{display:block;font-size:var(--fs12);color:var(--muted);margin-bottom:var(--s4)}
+
+/* けっか */
+.result{text-align:center;display:flex;flex-direction:column;gap:var(--s12);align-items:center}
+.result .big{font-family:var(--display);font-size:var(--fs40);line-height:1.2}
+.result .msg{background:var(--brand);color:var(--on-brand);border:var(--bw) solid var(--ink);border-radius:var(--r-btn);padding:var(--s8) var(--s16);font-weight:700}
+.miss{width:100%;text-align:left;display:grid;gap:var(--s8)}
+.miss div{border:2px solid var(--line-soft);border-radius:var(--r-btn);padding:var(--s12);font-size:var(--fs14);line-height:1.6}
+.miss div b{display:block}
+.stack{display:grid;gap:var(--s12);width:100%}
+
+/* 確認 */
+.dlg{position:fixed;inset:0;z-index:10;background:var(--scrim);display:grid;place-items:center;padding:var(--s16)}
+.dlg-box{background:var(--paper);border:var(--bw) solid var(--ink);border-radius:var(--r-sheet);padding:var(--s24);width:min(320px,100%);box-sizing:border-box;display:grid;gap:var(--s16);text-align:center}
+.dlg-box b{font-size:var(--fs20)}
+.dlg-row{display:grid;grid-template-columns:1fr 1fr;gap:var(--s8)}
+</style>
+
+<div class="app">
+  <div class="headwrap">
+    <header class="top" id="top"></header>
+    <div class="pbar" id="pbar"></div>
+  </div>
+  <main id="main"></main>
+</div>
+
+<script>
+// 問題データは tools/build.py が data/questions.json から埋めこむ。index.html は直接編集しない
+const DATA = {"courses":[{"id":"seiji","name":"日本の政治","sub":"首相・選挙・国会・新しい役所"},{"id":"kokusai","name":"世界のできごと","sub":"国際会議・国際機関・各国の動き"},{"id":"keizai","name":"経済・くらし","sub":"米・税・貿易・株価・交通ルール"},{"id":"jinko","name":"人口・社会","sub":"出生数・国勢調査"},{"id":"bunka","name":"文化・スポーツ","sub":"世界遺産・ノーベル賞・大会"},{"id":"shunen","name":"〇〇周年","sub":"今年が節目のできごと"}],"questions":[{"id":"seiji-01","cat":"seiji","when":"2025年10月","q":"2025年10月、日本で初めて女性の内閣総理大臣になったのはだれ？","choices":["高市早苗","小池百合子","野田聖子","上川陽子"],"exp":"2025年10月21日、国会で指名されて第104代の内閣総理大臣になった。","link":"首相は国会議員の中から国会の議決で指名され、天皇が任命する（日本国憲法第67条・第6条）。","src":[1],"checked":"2026-11-04"},{"id":"seiji-02","cat":"seiji","when":"2025年10月","q":"2025年10月、自民党との連立政権から離れた政党は？","choices":["公明党","日本維新の会","立憲民主党","国民民主党"],"exp":"公明党は1999年から（野党だった時期をのぞき）自民党と連立を組んできたが、2025年10月に連立を離れた。かわりに自民党は日本維新の会と連立を組んだ。","link":"連立政権：1つの政党だけで過半数をとれないとき、複数の政党が組んで内閣をつくること。","src":[1],"checked":"2026-11-04"},{"id":"seiji-03","cat":"seiji","when":"2026年2月","q":"2026年2月8日に総選挙が行われた衆議院。議員の定数は何人？","choices":["465人","248人","480人","500人"],"exp":"この選挙で自民党は単独で316議席を獲得し、戦後最多となった。","link":"参議院の定数は248人。衆議院は任期4年で解散がある。参議院は任期6年で解散がなく、3年ごとに半数を改選する。","src":[2],"checked":"2026-11-04"},{"id":"seiji-04","cat":"seiji","when":"2026年2月","q":"2026年2月の衆院選で、自民党は単独で総定数のどれだけをこえる議席を得た？","choices":["3分の2","4分の3","5分の4","過半数に届かなかった"],"exp":"465議席のうち316議席（約68％）を獲得し、単独で3分の2（310議席）をこえた。","link":"参議院で否決された法律案も、衆議院で出席議員の3分の2以上が賛成すれば再可決して成立する（憲法第59条）。","src":[2],"checked":"2026-11-04"},{"id":"seiji-05","cat":"seiji","when":"2026年2月","q":"衆議院が解散されたあと、総選挙の日から何日以内に国会（特別国会）が開かれる？","choices":["30日以内","40日以内","10日以内","60日以内"],"exp":"2026年1月の解散→2月8日の総選挙→特別国会で首相の指名、という流れになった。","link":"解散の日から40日以内に総選挙、総選挙の日から30日以内に特別国会（憲法第54条）。","src":[2],"checked":"2026-11-04"},{"id":"seiji-06","cat":"seiji","when":"2025年7月","q":"2025年7月に選挙が行われた参議院。議員の任期は何年？","choices":["6年","4年","3年","5年"],"exp":"2025年7月の参院選では、自民・公明の与党が参議院でも過半数を割りこんだ。","link":"参議院は任期6年・解散なし・3年ごとに半数を改選。被選挙権は30歳以上（衆議院は25歳以上）。","src":[1],"checked":"2026-11-04"},{"id":"seiji-07","cat":"seiji","when":"2026年11月","q":"2026年11月、災害対策の司令塔として発足した国の機関は？","choices":["防災庁","デジタル庁","こども家庭庁","復興庁"],"exp":"首相をトップとする内閣直属の組織で、各省庁に勧告できる大臣を置く。内閣直属の庁ができるのは2021年のデジタル庁以来。","link":"こども家庭庁は2023年4月、復興庁は東日本大震災の翌年の2012年に発足。","src":[3],"checked":"2026-11-04"},{"id":"kokusai-01","cat":"kokusai","when":"2025年5月","q":"2025年5月、アメリカ出身として初めてローマ教皇に選ばれた人の名前は？","choices":["レオ14世","フランシスコ","ベネディクト16世","ヨハネ・パウロ3世"],"exp":"前の教皇フランシスコが2025年4月に亡くなり、コンクラーベ（教皇選挙）でレオ14世が選ばれた。","link":"ローマ教皇はカトリック教会の最高指導者。教皇がいるバチカン市国は世界でいちばん小さな国。","src":[4],"checked":"2026-11-04"},{"id":"kokusai-02","cat":"kokusai","when":"2025年10月","q":"2025年10月、ASEAN（東南アジア諸国連合）に11番目の国として加盟したのは？","choices":["東ティモール","ミャンマー","パプアニューギニア","バングラデシュ"],"exp":"東ティモールは2002年にインドネシアから独立した国。ASEANの加盟国が増えるのは1999年のカンボジア以来。","link":"ASEANは1967年に5か国（インドネシア・マレーシア・フィリピン・シンガポール・タイ）で発足した。","src":[4],"checked":"2026-11-04"},{"id":"kokusai-03","cat":"kokusai","when":"2025年11月","q":"2025年11月、アマゾン川の河口の都市ベレンでCOP30が開かれた。開催国は？","choices":["ブラジル","アルゼンチン","ペルー","コロンビア"],"exp":"化石燃料の段階的な廃止は合意文書に入らなかった。気候変動への適応のための資金を2035年までに3倍にする目標がもりこまれた。","link":"COPは国連の気候変動枠組条約の締約国会議。COP3で京都議定書（1997年）、COP21でパリ協定（2015年）が採択された。","src":[5],"checked":"2026-11-04"},{"id":"kokusai-04","cat":"kokusai","when":"2026年11月","q":"2026年11月のCOP31が開かれるアンタルヤは、どこの国の都市？","choices":["トルコ","エジプト","インド","南アフリカ"],"exp":"開催地をトルコとオーストラリアが争い、会場はトルコ、交渉の議長はオーストラリアが担当することで決着した。","link":"パリ協定は、世界の平均気温の上昇を産業革命前より2℃より十分低く、できれば1.5℃におさえることをめざす。","src":[5],"checked":"2026-11-04"},{"id":"kokusai-05","cat":"kokusai","when":"2025年","q":"2025年、アメリカのトランプ大統領が日本をふくむ各国からの輸入品に引き上げた税は？","choices":["関税","消費税","所得税","法人税"],"exp":"自動車などにかかる関税が引き上げられ、日米で交渉が行われた。","link":"関税は輸入品にかける税。国内の産業を守るために使われるが、かけ合いになると貿易が縮む。自由な貿易のルールを話し合う国際機関がWTO（世界貿易機関）。","src":[4],"checked":"2026-11-04"},{"id":"keizai-01","cat":"keizai","when":"2025年","q":"2025年、米の値段が大きく上がったため、政府が市場に放出したものは？","choices":["備蓄米","輸入小麦","古代米","減反米"],"exp":"不作や災害にそなえて国がたくわえていた米を、店頭の値段を下げるために放出した。","link":"日本の食料自給率（カロリーベース）は約38％。米はほぼ自給できる数少ない品目。","src":[4],"checked":"2026-11-04"},{"id":"keizai-02","cat":"keizai","when":"2025年12月","q":"2025年12月31日に廃止された、ガソリンにかかる税の上乗せ分を何という？","choices":["暫定税率","軽減税率","累進課税","固定資産税"],"exp":"1974年に「暫定（一時的）」として始まった上乗せ分が、約50年続いたのちに廃止された。","link":"税金を納める人と実際に負担する人がちがう税を間接税という（消費税・ガソリン税など）。所得税のように同じ人が納めて負担するのが直接税。","src":[4],"checked":"2026-11-04"},{"id":"keizai-03","cat":"keizai","when":"2025年10月","q":"2025年10月に初めて5万円をこえた「日経平均株価」。どこの市場の株価をもとにしている？","choices":["東京証券取引所","大阪取引所","名古屋証券取引所","ニューヨーク証券取引所"],"exp":"東京証券取引所プライム市場の代表的な225銘柄の株価から計算する指数。","link":"株式会社は株式を発行して資金を集める。株を持つ人（株主）は利益の一部を配当として受け取る。","src":[4],"checked":"2026-11-04"},{"id":"keizai-04","cat":"keizai","when":"2026年4月","q":"2026年4月から、自転車の信号無視などにも「青切符」（反則金）が使われるようになった。対象は何歳以上？","choices":["16歳以上","12歳以上","18歳以上","20歳以上"],"exp":"改正道路交通法による。16歳未満は反則金ではなく指導・警告の対象。","link":"自転車は道路交通法では「軽車両」で、車道の左側通行が原則。","src":[6],"checked":"2026-11-04"},{"id":"jinko-01","cat":"jinko","when":"2026年6月公表","q":"2025年の日本の合計特殊出生率（1人の女性が一生に産む子どもの数の目安）は？","choices":["1.14","1.57","1.26","2.07"],"exp":"過去最低を10年連続で更新。2025年の出生数（日本人）は約67万人で、これも10年連続で過去最少。","link":"1989年の1.57が「1.57ショック」と呼ばれた。人口を保つには約2.07が必要とされる。","src":[7],"checked":"2026-11-04"},{"id":"jinko-02","cat":"jinko","when":"2026年6月公表","q":"2025年の合計特殊出生率が都道府県で最も低かったのは？","choices":["東京都","北海道","秋田県","大阪府"],"exp":"東京都は0.96で、3年連続で1を下回った。最も高かったのは沖縄県（1.52）。","link":"若い世代が進学・就職で大都市に集まる一方、大都市では住居費が高く子育てがしにくいことなどが理由に挙げられる。","src":[7],"checked":"2026-11-04"},{"id":"jinko-03","cat":"jinko","when":"2026年5月公表","q":"2025年の国勢調査（速報）で、前回（2020年）より人口が増えた都道府県は？","choices":["東京都と沖縄県","東京都と神奈川県","東京都と大阪府","愛知県と沖縄県"],"exp":"日本の人口は1億2305万人で、前回より約310万人減り、減り方は調査史上最大。増えたのは2都県だけで、45道府県で減った。","link":"死亡数が出生数を上回ることを「自然減」という。人口減少の主な原因になっている。","src":[8],"checked":"2026-11-04"},{"id":"jinko-04","cat":"jinko","when":"2025年10月","q":"2025年10月に行われた国勢調査。何年ごとに行われる？","choices":["5年ごと","10年ごと","4年ごと","毎年"],"exp":"国内に住むすべての人と世帯を対象にする、国のいちばん基本的な統計調査。","link":"第1回の国勢調査は1920年（大正9年）。","src":[8],"checked":"2026-11-04"},{"id":"bunka-01","cat":"bunka","when":"2026年7月","q":"2026年7月に世界文化遺産に登録された「飛鳥・藤原の宮都」があるのは何県？","choices":["奈良県","京都府","大阪府","滋賀県"],"exp":"韓国・釜山の世界遺産委員会で登録が決まった。橿原市・桜井市・明日香村にまたがる19の資産からなる。","link":"藤原京は694年に持統天皇が移した、日本で初めての本格的な都。710年に平城京へうつった。","src":[9],"checked":"2026-11-04"},{"id":"bunka-02","cat":"bunka","when":"2026年7月","q":"「飛鳥・藤原の宮都」の資産のうち、蘇我馬子の墓とされる古墳は？","choices":["石舞台古墳","高松塚古墳","大仙古墳","稲荷山古墳"],"exp":"石舞台古墳は盛り土がなくなり、巨大な石室がむき出しになっている。高松塚古墳は「飛鳥美人」の壁画で知られ、これも構成資産。","link":"大仙古墳（仁徳天皇陵とされる）は大阪府堺市の「百舌鳥・古市古墳群」（2019年登録）。","src":[9],"checked":"2026-11-04"},{"id":"bunka-03","cat":"bunka","when":"2026年7月","q":"「飛鳥・藤原の宮都」の登録で、日本の世界遺産は全部で何件になった？","choices":["27件","25件","22件","30件"],"exp":"文化遺産22件＋自然遺産5件＝27件。文化遺産の1つ前は2024年の「佐渡島の金山」（新潟県）。","link":"自然遺産は知床・白神山地・屋久島・小笠原諸島・奄美大島/徳之島/沖縄島北部/西表島の5件。","src":[9],"checked":"2026-11-04"},{"id":"bunka-04","cat":"bunka","when":"2025年10月","q":"2025年、制御性T細胞の発見でノーベル生理学・医学賞を受賞した日本人は？","choices":["坂口志文","北川進","山中伸弥","本庶佑"],"exp":"制御性T細胞は、免疫が自分の体をこうげきしすぎないようにブレーキをかける細胞。","link":"ノーベル賞はダイナマイトを発明したスウェーデンのアルフレッド・ノーベルの遺言で始まった。","src":[4],"checked":"2026-11-04"},{"id":"bunka-05","cat":"bunka","when":"2025年10月","q":"2025年、すきまの多い新しい材料（金属有機構造体）の研究でノーベル化学賞を受賞した日本人は？","choices":["北川進","坂口志文","吉野彰","大隅良典"],"exp":"小さな穴がたくさんある材料で、気体をためたり分けたりできる。二酸化炭素の回収などへの利用が期待されている。","link":"吉野彰さんはリチウムイオン電池の開発で2019年にノーベル化学賞を受賞した。","src":[4],"checked":"2026-11-04"},{"id":"bunka-06","cat":"bunka","when":"2025年4〜10月","q":"2025年の大阪・関西万博の会場になった、大阪湾の人工島は？","choices":["夢洲","咲洲","舞洲","ポートアイランド"],"exp":"テーマは「いのち輝く未来社会のデザイン」。2025年4月13日から10月13日まで開かれた。","link":"1970年の大阪万博は吹田市の千里丘陵で開かれ、岡本太郎の「太陽の塔」が今も残る。","src":[4],"checked":"2026-11-04"},{"id":"bunka-07","cat":"bunka","when":"2026年2月","q":"2026年2月のミラノ・コルティナ冬季オリンピック。開催国は？","choices":["イタリア","フランス","スイス","オーストリア"],"exp":"日本のメダルは金5・銀7・銅12の合計24個で、冬季大会の過去最多を更新した。","link":"日本で開かれた冬季大会は1972年の札幌と1998年の長野。","src":[10],"checked":"2026-11-04"},{"id":"bunka-08","cat":"bunka","when":"2026年3月","q":"2026年3月の野球の国際大会WBCで、初めて優勝した国は？","choices":["ベネズエラ","アメリカ","ドミニカ共和国","日本"],"exp":"決勝でアメリカを3対2で破った。日本は準々決勝でベネズエラに敗れた。","link":"日本は2006年・2009年・2023年の3回優勝している。ベネズエラは南アメリカ大陸の北部にある国。","src":[11],"checked":"2026-11-04"},{"id":"bunka-09","cat":"bunka","when":"2026年6〜7月","q":"2026年のサッカー・ワールドカップは、アメリカ・カナダ・メキシコの共同開催。出場国は何か国に増えた？","choices":["48か国","32か国","40か国","64か国"],"exp":"前回までの32か国から48か国に増えた。優勝はスペイン。日本はグループリーグを2位で通過したが、ラウンド32でブラジルに敗れた。","link":"3か国はUSMCA（アメリカ・メキシコ・カナダ協定、旧NAFTA）で結ばれた北アメリカの国々。","src":[12],"checked":"2026-11-04"},{"id":"bunka-10","cat":"bunka","when":"2026年9〜10月","q":"2026年のアジア大会は愛知県・名古屋市で開かれた。32年前の1994年に日本で開かれたときの都市は？","choices":["広島市","札幌市","福岡市","大阪市"],"exp":"1994年の広島アジア大会以来、32年ぶりの日本開催。日本の金メダル数は過去最多になった。","link":"広島市には世界文化遺産の原爆ドームがあり、広島県廿日市市には厳島神社がある（どちらも1996年登録）。","src":[13],"checked":"2026-11-04"},{"id":"shunen-01","cat":"shunen","when":"2026年","q":"2026年11月3日は、日本国憲法の公布から何年？","choices":["80年","70年","75年","100年"],"exp":"日本国憲法は1946年11月3日に公布、1947年5月3日に施行された。","link":"公布の日（11月3日）は「文化の日」、施行の日（5月3日）は「憲法記念日」。3つの原則は国民主権・基本的人権の尊重・平和主義。","src":[14],"checked":"2026-11-04"},{"id":"shunen-02","cat":"shunen","when":"2026年","q":"2026年で加盟から70年。1956年、日本の国際連合への加盟を可能にしたできごとは？","choices":["日ソ共同宣言","日米安全保障条約","サンフランシスコ平和条約","日中平和友好条約"],"exp":"ソ連（今のロシア）との国交が回復し、国連の安全保障理事会でソ連が反対しなくなったため、同じ1956年12月に加盟できた。","link":"サンフランシスコ平和条約と日米安全保障条約は1951年、日中平和友好条約は1978年。","src":[14],"checked":"2026-11-04"},{"id":"shunen-03","cat":"shunen","when":"2026年","q":"2026年で公式確認から70年。熊本県・鹿児島県の八代海沿岸で起きた公害病は？","choices":["水俣病","イタイイタイ病","四日市ぜんそく","新潟水俣病"],"exp":"1956年5月に公式に確認された。工場の排水にふくまれたメチル水銀が原因。","link":"四大公害病：水俣病（熊本・鹿児島）、新潟水俣病（阿賀野川流域）、イタイイタイ病（富山・神通川流域、カドミウム）、四日市ぜんそく（三重、大気汚染）。","src":[14],"checked":"2026-11-04"},{"id":"shunen-04","cat":"shunen","when":"2026年7月","q":"2026年7月4日に独立宣言から250年をむかえた国は？","choices":["アメリカ合衆国","イギリス","フランス","カナダ"],"exp":"1776年7月4日、イギリスの植民地だった13州が独立を宣言した。","link":"独立宣言の13年後の1789年にフランス革命が起き、人権宣言が出された。","src":[14],"checked":"2026-11-04"},{"id":"shunen-05","cat":"shunen","when":"2025年","q":"2025年は、太平洋戦争（第二次世界大戦）が終わってから何年だった？","choices":["80年","70年","75年","90年"],"exp":"1945年8月15日に終戦。2025年は「戦後80年」、また昭和元年（1926年）から数えて「昭和100年」にもあたった。","link":"1945年8月6日に広島、8月9日に長崎に原子爆弾が投下された。","src":[14],"checked":"2026-11-04"},{"id":"shunen-06","cat":"shunen","when":"2025年","q":"2025年で国交正常化から60年。1965年に日本と韓国が結んだ条約は？","choices":["日韓基本条約","日朝平壌宣言","日韓併合条約","日韓共同宣言"],"exp":"1965年の日韓基本条約で、日本と大韓民国の国交が正常化した。","link":"1910年の韓国併合から1945年まで、朝鮮半島は日本の植民地だった。","src":[14],"checked":"2026-11-04"}]};
+const COURSES = DATA.courses;
+const QS = DATA.questions;
+const PER_ROUND = 10;   // 1回に出す問題数（コースの問題がそれより少なければ全部）
+const KEY = 'sakki-jiji-v1';
+
+// ---- 記録（localStorage が使えなくても遊べる）----
+function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {} }catch(e){ return {} } }
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(store)) }catch(e){} }
+const store = Object.assign({best:{}, seen:{}, sound:true}, load());
+
+// ---- 音（WebAudio。ファイルなし）----
+let ac = null;
+function tone(freqs, dur, type){
+  if(!store.sound) return;
+  try{
+    ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+    const t0 = ac.currentTime;
+    freqs.forEach((f, i) => {
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = type; o.frequency.value = f;
+      const st = t0 + i * 0.07;
+      g.gain.setValueAtTime(0.0001, st);
+      g.gain.exponentialRampToValueAtTime(0.18, st + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, st + dur);
+      o.connect(g).connect(ac.destination); o.start(st); o.stop(st + dur + 0.05);
+    });
+  }catch(e){}
+}
+const sOK = () => tone([784, 988, 1175, 1568], 0.5, 'triangle');
+const sNG = () => tone([196, 185], 0.35, 'square');
+
+// ---- 小道具 ----
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function shuffle(a){ a = a.slice(); for(let i = a.length - 1; i > 0; i--){ const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]] } return a }
+const ICON_HOME = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9h-6v-6H9v6H3z"/></svg>';
+const soundBtn = () => `<button class="iconbtn" id="snd" aria-label="音">${store.sound ? '音<br>ON' : '音<br>OFF'}</button>`;
+function bindSound(){ $('#snd').onclick = () => { store.sound = !store.sound; save(); $('#snd').innerHTML = store.sound ? '音<br>ON' : '音<br>OFF' } }
+const courseName = id => id === 'all' ? '全部まぜて' : id === 'miss' ? 'まちがえた問題' : COURSES.find(c => c.id === id).name;
+
+// ---- タイトル ----
+function home(){
+  $('#top').innerHTML = `<div class="brand">サッ記マン<small>時事ニュースクイズ</small></div>${soundBtn()}`;
+  bindSound();
+  $('#pbar').innerHTML = '';
+  const rec = id => {
+    const n = id === 'all' ? QS.length : QS.filter(q => q.cat === id).length;
+    const b = store.best[id];
+    if(b == null) return `<div class="rec">${n}問</div>`;
+    return `<div class="rec">${b === Math.min(n, PER_ROUND) ? '<span class="crown">👑</span><br>' : ''}最高 ${b}/${Math.min(n, PER_ROUND)}</div>`;
+  };
+  const missN = QS.filter(q => store.seen[q.id] === 0).length;
+  $('#main').innerHTML = `
+    <div class="hero"><h1>時事ニュース<br>クイズ</h1><p>ニュース → つながる知識の順でおぼえよう！</p></div>
+    <p class="sec">コースをえらぶ</p>
+    <div class="courses">
+      ${COURSES.map(c => `<button class="course" data-c="${c.id}"><div class="t"><b>${esc(c.name)}</b><span>${esc(c.sub)}</span></div>${rec(c.id)}</button>`).join('')}
+      <button class="course all" data-c="all"><div class="t"><b>全部まぜて</b><span>全コースからランダムに${PER_ROUND}問</span></div>${rec('all')}</button>
+      ${missN ? `<button class="course" data-c="miss"><div class="t"><b>まちがえた問題</b><span>前にまちがえた問題だけ</span></div><div class="rec">${missN}問</div></button>` : ''}
+    </div>
+    <div class="foot"><button class="linkbtn" id="reset">記録を消す</button></div>
+    <p class="note">ニュースの日付・数字は、それぞれ公表された資料で確かめた時点のものです（確認日：${esc(QS[0].checked)}）。</p>`;
+  document.querySelectorAll('.course').forEach(b => b.onclick = () => start(b.dataset.c));
+  $('#reset').onclick = () => confirmDlg('記録をぜんぶ消す？', '消す', () => { store.best = {}; store.seen = {}; save(); home() });
+  window.scrollTo(0, 0);
+}
+
+// ---- 出題 ----
+let run = null;
+function start(cid){
+  let pool = cid === 'all' ? QS : cid === 'miss' ? QS.filter(q => store.seen[q.id] === 0) : QS.filter(q => q.cat === cid);
+  const list = shuffle(pool).slice(0, PER_ROUND).map(q => {
+    const order = shuffle([0, 1, 2, 3]);
+    return { q, order, picked: null };
+  });
+  run = { cid, list, i: 0 };
+  ask();
+}
+function bar(){
+  $('#pbar').innerHTML = run.list.map((it, k) =>
+    `<i class="${k === run.i && it.picked == null ? 'now' : it.picked == null ? '' : it.picked === 0 ? 'ok' : 'ng'}"></i>`).join('');
+}
+function topQuiz(){
+  $('#top').innerHTML = `<button class="iconbtn" id="quit" aria-label="タイトル">${ICON_HOME}<span>タイトル</span></button>
+    <div class="meta"><span class="nm">${esc(courseName(run.cid))}</span><span class="num">${run.i + 1} / ${run.list.length}問</span></div>${soundBtn()}`;
+  bindSound();
+  $('#quit').onclick = () => confirmDlg('問題を終了する？', '終了', home, '続ける');
+}
+function ask(){
+  const it = run.list[run.i], q = it.q;
+  topQuiz(); bar();
+  $('#main').innerHTML = `
+    <span class="when">${esc(q.when)}のニュース</span>
+    <p class="q">${esc(q.q)}</p>
+    <div class="choices">${it.order.map((ci, k) => `<button class="choice" data-ci="${ci}"><span class="k">${'アイウエ'[k]}</span><span>${esc(q.choices[ci])}</span></button>`).join('')}</div>
+    <div id="after"></div>`;
+  document.querySelectorAll('.choice').forEach(b => b.onclick = () => answer(+b.dataset.ci));
+  window.scrollTo(0, 0);
+}
+function answer(ci){
+  const it = run.list[run.i], q = it.q;
+  if(it.picked != null) return;
+  it.picked = ci;
+  const ok = ci === 0;
+  store.seen[q.id] = ok ? 1 : 0; save();
+  ok ? sOK() : sNG();
+  document.querySelectorAll('.choice').forEach(b => {
+    const c = +b.dataset.ci; b.disabled = true;
+    b.classList.add(c === 0 ? 'ok' : c === ci ? 'ng' : 'dim');
+  });
+  bar();
+  const last = run.i === run.list.length - 1;
+  $('#after').innerHTML = `
+    <div class="fb ${ok ? 'ok' : 'ng'}">
+      <div class="head">${ok ? 'せいかい！' : 'ざんねん'}</div>
+      ${ok ? '' : `<div class="ans">正解は <em>${esc(q.choices[0])}</em><br>キミが選んだのは ${esc(q.choices[ci])}。</div>`}
+      <p>${esc(q.exp)}</p>
+      <div class="link"><b>つながる知識</b>${esc(q.link)}</div>
+      <button class="btn primary" id="next">${last ? 'けっかを見る' : 'つぎへ'}</button>
+    </div>`;
+  $('#next').onclick = () => { if(last) result(); else { run.i++; ask() } };
+  $('#after').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ---- けっか ----
+function result(){
+  const n = run.list.length, ok = run.list.filter(it => it.picked === 0).length;
+  if(run.cid !== 'miss'){ store.best[run.cid] = Math.max(store.best[run.cid] || 0, ok); save() }
+  const msg = ok === n ? '👑 パーフェクト！' : ok >= n * 0.7 ? 'あと少し！' : 'もう一回、いっしょに！';
+  $('#top').innerHTML = `<div class="meta"><span class="nm">${esc(courseName(run.cid))}</span><span class="num">けっか</span></div>${soundBtn()}`;
+  bindSound();
+  const miss = run.list.filter(it => it.picked !== 0);
+  $('#main').innerHTML = `<div class="result">
+    <div class="big">${ok} / ${n}</div>
+    <div class="msg">${msg}</div>
+    ${miss.length ? `<p class="sec">まちがえた問題</p><div class="miss">${miss.map(it => `<div><b>${esc(it.q.q)}</b>→ ${esc(it.q.choices[0])}</div>`).join('')}</div>` : ''}
+    <div class="stack">
+      ${miss.length ? '<button class="btn primary" id="again-miss">まちがえた問題だけもう一回</button>' : ''}
+      <button class="btn ${miss.length ? '' : 'primary'}" id="again">もう一回</button>
+      <button class="btn" id="home">コース一覧にもどる</button>
+    </div></div>`;
+  if(miss.length) $('#again-miss').onclick = () => {
+    run = { cid: run.cid, list: shuffle(miss).map(it => ({ q: it.q, order: shuffle([0, 1, 2, 3]), picked: null })), i: 0 };
+    ask();
+  };
+  $('#again').onclick = () => start(run.cid);
+  $('#home').onclick = home;
+  window.scrollTo(0, 0);
+}
+
+// ---- 確認ダイアログ ----
+function confirmDlg(text, yes, onYes, no = 'やめる'){
+  const d = document.createElement('div');
+  d.className = 'dlg';
+  d.innerHTML = `<div class="dlg-box"><b>${esc(text)}</b><div class="dlg-row"><button class="btn" data-a="no">${esc(no)}</button><button class="btn primary" data-a="yes">${esc(yes)}</button></div></div>`;
+  d.onclick = e => {
+    const a = e.target.closest('button')?.dataset.a;
+    if(a || e.target === d){ d.remove(); if(a === 'yes') onYes() }
+  };
+  document.body.appendChild(d);
+}
+
+home();
+</script>

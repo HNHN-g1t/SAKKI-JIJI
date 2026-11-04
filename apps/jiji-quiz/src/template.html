@@ -1,0 +1,298 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>時事ニュースクイズ</title>
+<!-- ファビコンは公開サイトの直下（site/ から tools/build_site.py で配置）。?v= はスマホの覚え込み対策で、差し替えたら上げる -->
+<link rel="icon" href="../favicon.ico?v=2" sizes="any">
+<link rel="icon" href="../favicon-32.png?v=2" type="image/png" sizes="32x32">
+<link rel="icon" href="../icon-192.png?v=2" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png?v=2">
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Dela+Gothic+One&display=swap">
+<style>
+/* 配色は SAKKI-MAN の地図クイズと同じ（ブランド黄と墨）。色はこの3か所の変数でだけ定義する */
+:root{
+  --brand:#FED003; --on-brand:#282727;
+  --ink:#282727; --paper:#FFFFFF; --cream:#FEF3E6; --bg:#ECEBE9;
+  --muted:#5E5A58; --line-soft:#CFCCCA;
+  --ok:#1E7B45; --ng:#C23A2B; --on-strong:#FFFFFF; --ok-soft:#CBEBD6; --ng-soft:#F9D4CD;
+  --scrim:#282727B3;
+  --display:"Dela Gothic One","Hiragino Sans","Yu Gothic",sans-serif;
+  --body:"BIZ UDPGothic","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic","Meiryo",sans-serif;
+  --fs12:12px; --fs14:14px; --fs16:16px; --fs20:20px; --fs28:28px; --fs40:40px;
+  --s4:4px; --s8:8px; --s12:12px; --s16:16px; --s24:24px; --s32:32px;
+  --r-btn:14px; --r-sheet:20px; --r-pill:999px; --bw:2.5px; --tap:48px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ink:#FEF3E6; --paper:#232222; --cream:#3A3632; --bg:#141313;
+  --muted:#C8BEB1; --line-soft:#4D4A47; --ok-soft:#24543A; --ng-soft:#6A2A22; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --ink:#FEF3E6; --paper:#232222; --cream:#3A3632; --bg:#141313;
+  --muted:#C8BEB1; --line-soft:#4D4A47; --ok-soft:#24543A; --ng-soft:#6A2A22; color-scheme:dark}
+
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:var(--fs16);-webkit-tap-highlight-color:transparent}
+.app{min-height:100dvh;max-width:640px;margin:0 auto;background:var(--paper);display:flex;flex-direction:column}
+
+/* 上の帯 */
+.headwrap{position:sticky;top:0;z-index:2;background:var(--paper)}
+.top{display:flex;align-items:center;gap:var(--s8);min-height:64px;box-sizing:border-box;
+  padding:var(--s8) max(var(--s16),env(safe-area-inset-right,0px)) var(--s8) max(var(--s16),env(safe-area-inset-left,0px))}
+.brand{flex:1;min-width:0;font-family:var(--display);font-size:15px;line-height:1.3}
+.brand small{display:block;font-family:var(--body);font-weight:700;font-size:var(--fs12);color:var(--muted)}
+.meta{flex:1;min-width:0;font-weight:700}
+.meta .nm{display:block;font-size:var(--fs12);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meta .num{display:block;font-size:var(--fs16);font-variant-numeric:tabular-nums}
+
+/* 進み具合 */
+.pbar{display:flex;align-items:flex-end;gap:2px;padding:0 var(--s16) var(--s8)}
+.pbar:empty{display:none}
+.pbar i{flex:1;height:6px;border-radius:var(--r-pill);background:var(--line-soft)}
+.pbar i.now{height:12px;background:var(--brand);box-shadow:inset 0 0 0 1.5px var(--ink)}
+.pbar i.ok{background:var(--ok)} .pbar i.ng{background:var(--ng)}
+
+/* ボタンは3種類：主要（黄＋墨の枠＋影）／補助（白＋墨の枠）／最小限（文字だけ） */
+.btn,.iconbtn,.course,.choice{box-sizing:border-box;min-height:var(--tap);border:var(--bw) solid var(--ink);border-radius:var(--r-btn);background:var(--paper);color:var(--ink);font-family:var(--body);font-weight:700;font-size:var(--fs16);cursor:pointer}
+.btn:active,.iconbtn:active,.course:active,.choice:active{transform:translateY(2px)}
+.btn.primary{background:var(--brand);color:var(--on-brand);box-shadow:0 4px 0 var(--ink)}
+.btn.primary:active{transform:translateY(4px);box-shadow:none}
+.btn{padding:0 var(--s16)}
+.iconbtn{flex:none;min-width:44px;height:44px;padding:0 var(--s8);display:grid;place-items:center;font-size:11px;line-height:1}
+.iconbtn svg{width:20px;height:20px}
+.linkbtn{border:0;background:none;color:var(--ink);font:700 var(--fs14) var(--body);text-decoration:underline;cursor:pointer;min-height:var(--tap);padding:0 var(--s4)}
+.btn:focus-visible,.iconbtn:focus-visible,.course:focus-visible,.choice:focus-visible,.linkbtn:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+
+main{flex:1;padding:var(--s16) max(var(--s16),env(safe-area-inset-right,0px)) calc(var(--s32) + env(safe-area-inset-bottom,0px)) max(var(--s16),env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:var(--s16)}
+
+/* タイトル */
+.hero{background:var(--brand);color:var(--on-brand);border:var(--bw) solid var(--ink);border-radius:var(--r-sheet);padding:var(--s24) var(--s16);text-align:center}
+.hero h1{margin:0;font-family:var(--display);font-weight:400;font-size:var(--fs28);line-height:1.3}
+.hero p{margin:var(--s8) 0 0;font-weight:700;font-size:var(--fs14)}
+.sec{margin:var(--s8) 0 0;font-size:var(--fs14);color:var(--muted)}
+.courses{display:grid;gap:var(--s12)}
+.course{display:flex;align-items:center;gap:var(--s12);text-align:left;padding:var(--s12) var(--s16)}
+.course .t{flex:1;min-width:0}
+.course b{display:block;font-size:var(--fs20)}
+.course span{display:block;font-weight:400;font-size:var(--fs14);color:var(--muted);margin-top:2px}
+.course .rec{flex:none;font-size:var(--fs14);text-align:right;font-variant-numeric:tabular-nums}
+.course .rec .crown{font-size:var(--fs20)}
+.course.all{background:var(--cream)}
+.foot{display:flex;justify-content:center;gap:var(--s16);flex-wrap:wrap}
+.note{font-size:var(--fs12);color:var(--muted);line-height:1.6;margin:0}
+
+/* 出題 */
+.when{align-self:flex-start;background:var(--ink);color:var(--paper);font-weight:700;font-size:var(--fs12);padding:var(--s4) var(--s12);border-radius:var(--r-pill)}
+.q{margin:0;font-weight:700;font-size:var(--fs20);line-height:1.6}
+.choices{display:grid;gap:var(--s8)}
+.choice{display:flex;align-items:center;gap:var(--s12);text-align:left;padding:var(--s12);font-size:var(--fs16);line-height:1.4}
+.choice .k{flex:none;width:28px;height:28px;border-radius:50%;border:2px solid var(--ink);display:grid;place-items:center;font-size:var(--fs14)}
+.choice[disabled]{cursor:default;transform:none}
+.choice.ok{background:var(--ok);color:var(--on-strong);border-color:var(--ok)}
+.choice.ok .k{border-color:var(--on-strong)}
+.choice.ng{background:var(--ng);color:var(--on-strong);border-color:var(--ng)}
+.choice.ng .k{border-color:var(--on-strong)}
+.choice.dim{opacity:.5}
+
+/* 答えたあと */
+.fb{border:var(--bw) solid var(--ink);border-radius:var(--r-sheet);padding:var(--s16);display:flex;flex-direction:column;gap:var(--s12)}
+.fb.ok{background:var(--ok-soft)} .fb.ng{background:var(--ng-soft)}
+.fb .head{font-family:var(--display);font-size:var(--fs28);line-height:1}
+.fb .ans{font-weight:700}
+.fb .ans em{font-style:normal;box-shadow:inset 0 -.45em 0 var(--brand)}
+.fb p{margin:0;line-height:1.7}
+.link{background:var(--paper);border-radius:var(--r-btn);padding:var(--s12)}
+.link b{display:block;font-size:var(--fs12);color:var(--muted);margin-bottom:var(--s4)}
+
+/* けっか */
+.result{text-align:center;display:flex;flex-direction:column;gap:var(--s12);align-items:center}
+.result .big{font-family:var(--display);font-size:var(--fs40);line-height:1.2}
+.result .msg{background:var(--brand);color:var(--on-brand);border:var(--bw) solid var(--ink);border-radius:var(--r-btn);padding:var(--s8) var(--s16);font-weight:700}
+.miss{width:100%;text-align:left;display:grid;gap:var(--s8)}
+.miss div{border:2px solid var(--line-soft);border-radius:var(--r-btn);padding:var(--s12);font-size:var(--fs14);line-height:1.6}
+.miss div b{display:block}
+.stack{display:grid;gap:var(--s12);width:100%}
+
+/* 確認 */
+.dlg{position:fixed;inset:0;z-index:10;background:var(--scrim);display:grid;place-items:center;padding:var(--s16)}
+.dlg-box{background:var(--paper);border:var(--bw) solid var(--ink);border-radius:var(--r-sheet);padding:var(--s24);width:min(320px,100%);box-sizing:border-box;display:grid;gap:var(--s16);text-align:center}
+.dlg-box b{font-size:var(--fs20)}
+.dlg-row{display:grid;grid-template-columns:1fr 1fr;gap:var(--s8)}
+</style>
+
+<div class="app">
+  <div class="headwrap">
+    <header class="top" id="top"></header>
+    <div class="pbar" id="pbar"></div>
+  </div>
+  <main id="main"></main>
+</div>
+
+<script>
+// 問題データは tools/build.py が data/questions.json から埋めこむ。index.html は直接編集しない
+const DATA = /*__DATA__*/null;
+const COURSES = DATA.courses;
+const QS = DATA.questions;
+const PER_ROUND = 10;   // 1回に出す問題数（コースの問題がそれより少なければ全部）
+const KEY = 'sakki-jiji-v1';
+
+// ---- 記録（localStorage が使えなくても遊べる）----
+function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {} }catch(e){ return {} } }
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(store)) }catch(e){} }
+const store = Object.assign({best:{}, seen:{}, sound:true}, load());
+
+// ---- 音（WebAudio。ファイルなし）----
+let ac = null;
+function tone(freqs, dur, type){
+  if(!store.sound) return;
+  try{
+    ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+    const t0 = ac.currentTime;
+    freqs.forEach((f, i) => {
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = type; o.frequency.value = f;
+      const st = t0 + i * 0.07;
+      g.gain.setValueAtTime(0.0001, st);
+      g.gain.exponentialRampToValueAtTime(0.18, st + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, st + dur);
+      o.connect(g).connect(ac.destination); o.start(st); o.stop(st + dur + 0.05);
+    });
+  }catch(e){}
+}
+const sOK = () => tone([784, 988, 1175, 1568], 0.5, 'triangle');
+const sNG = () => tone([196, 185], 0.35, 'square');
+
+// ---- 小道具 ----
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function shuffle(a){ a = a.slice(); for(let i = a.length - 1; i > 0; i--){ const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]] } return a }
+const ICON_HOME = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9h-6v-6H9v6H3z"/></svg>';
+const soundBtn = () => `<button class="iconbtn" id="snd" aria-label="音">${store.sound ? '音<br>ON' : '音<br>OFF'}</button>`;
+function bindSound(){ $('#snd').onclick = () => { store.sound = !store.sound; save(); $('#snd').innerHTML = store.sound ? '音<br>ON' : '音<br>OFF' } }
+const courseName = id => id === 'all' ? '全部まぜて' : id === 'miss' ? 'まちがえた問題' : COURSES.find(c => c.id === id).name;
+
+// ---- タイトル ----
+function home(){
+  $('#top').innerHTML = `<div class="brand">サッ記マン<small>時事ニュースクイズ</small></div>${soundBtn()}`;
+  bindSound();
+  $('#pbar').innerHTML = '';
+  const rec = id => {
+    const n = id === 'all' ? QS.length : QS.filter(q => q.cat === id).length;
+    const b = store.best[id];
+    if(b == null) return `<div class="rec">${n}問</div>`;
+    return `<div class="rec">${b === Math.min(n, PER_ROUND) ? '<span class="crown">👑</span><br>' : ''}最高 ${b}/${Math.min(n, PER_ROUND)}</div>`;
+  };
+  const missN = QS.filter(q => store.seen[q.id] === 0).length;
+  $('#main').innerHTML = `
+    <div class="hero"><h1>時事ニュース<br>クイズ</h1><p>ニュース → つながる知識の順でおぼえよう！</p></div>
+    <p class="sec">コースをえらぶ</p>
+    <div class="courses">
+      ${COURSES.map(c => `<button class="course" data-c="${c.id}"><div class="t"><b>${esc(c.name)}</b><span>${esc(c.sub)}</span></div>${rec(c.id)}</button>`).join('')}
+      <button class="course all" data-c="all"><div class="t"><b>全部まぜて</b><span>全コースからランダムに${PER_ROUND}問</span></div>${rec('all')}</button>
+      ${missN ? `<button class="course" data-c="miss"><div class="t"><b>まちがえた問題</b><span>前にまちがえた問題だけ</span></div><div class="rec">${missN}問</div></button>` : ''}
+    </div>
+    <div class="foot"><button class="linkbtn" id="reset">記録を消す</button></div>
+    <p class="note">ニュースの日付・数字は、それぞれ公表された資料で確かめた時点のものです（確認日：${esc(QS[0].checked)}）。</p>`;
+  document.querySelectorAll('.course').forEach(b => b.onclick = () => start(b.dataset.c));
+  $('#reset').onclick = () => confirmDlg('記録をぜんぶ消す？', '消す', () => { store.best = {}; store.seen = {}; save(); home() });
+  window.scrollTo(0, 0);
+}
+
+// ---- 出題 ----
+let run = null;
+function start(cid){
+  let pool = cid === 'all' ? QS : cid === 'miss' ? QS.filter(q => store.seen[q.id] === 0) : QS.filter(q => q.cat === cid);
+  const list = shuffle(pool).slice(0, PER_ROUND).map(q => {
+    const order = shuffle([0, 1, 2, 3]);
+    return { q, order, picked: null };
+  });
+  run = { cid, list, i: 0 };
+  ask();
+}
+function bar(){
+  $('#pbar').innerHTML = run.list.map((it, k) =>
+    `<i class="${k === run.i && it.picked == null ? 'now' : it.picked == null ? '' : it.picked === 0 ? 'ok' : 'ng'}"></i>`).join('');
+}
+function topQuiz(){
+  $('#top').innerHTML = `<button class="iconbtn" id="quit" aria-label="タイトル">${ICON_HOME}<span>タイトル</span></button>
+    <div class="meta"><span class="nm">${esc(courseName(run.cid))}</span><span class="num">${run.i + 1} / ${run.list.length}問</span></div>${soundBtn()}`;
+  bindSound();
+  $('#quit').onclick = () => confirmDlg('問題を終了する？', '終了', home, '続ける');
+}
+function ask(){
+  const it = run.list[run.i], q = it.q;
+  topQuiz(); bar();
+  $('#main').innerHTML = `
+    <span class="when">${esc(q.when)}のニュース</span>
+    <p class="q">${esc(q.q)}</p>
+    <div class="choices">${it.order.map((ci, k) => `<button class="choice" data-ci="${ci}"><span class="k">${'アイウエ'[k]}</span><span>${esc(q.choices[ci])}</span></button>`).join('')}</div>
+    <div id="after"></div>`;
+  document.querySelectorAll('.choice').forEach(b => b.onclick = () => answer(+b.dataset.ci));
+  window.scrollTo(0, 0);
+}
+function answer(ci){
+  const it = run.list[run.i], q = it.q;
+  if(it.picked != null) return;
+  it.picked = ci;
+  const ok = ci === 0;
+  store.seen[q.id] = ok ? 1 : 0; save();
+  ok ? sOK() : sNG();
+  document.querySelectorAll('.choice').forEach(b => {
+    const c = +b.dataset.ci; b.disabled = true;
+    b.classList.add(c === 0 ? 'ok' : c === ci ? 'ng' : 'dim');
+  });
+  bar();
+  const last = run.i === run.list.length - 1;
+  $('#after').innerHTML = `
+    <div class="fb ${ok ? 'ok' : 'ng'}">
+      <div class="head">${ok ? 'せいかい！' : 'ざんねん'}</div>
+      ${ok ? '' : `<div class="ans">正解は <em>${esc(q.choices[0])}</em><br>キミが選んだのは ${esc(q.choices[ci])}。</div>`}
+      <p>${esc(q.exp)}</p>
+      <div class="link"><b>つながる知識</b>${esc(q.link)}</div>
+      <button class="btn primary" id="next">${last ? 'けっかを見る' : 'つぎへ'}</button>
+    </div>`;
+  $('#next').onclick = () => { if(last) result(); else { run.i++; ask() } };
+  $('#after').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ---- けっか ----
+function result(){
+  const n = run.list.length, ok = run.list.filter(it => it.picked === 0).length;
+  if(run.cid !== 'miss'){ store.best[run.cid] = Math.max(store.best[run.cid] || 0, ok); save() }
+  const msg = ok === n ? '👑 パーフェクト！' : ok >= n * 0.7 ? 'あと少し！' : 'もう一回、いっしょに！';
+  $('#top').innerHTML = `<div class="meta"><span class="nm">${esc(courseName(run.cid))}</span><span class="num">けっか</span></div>${soundBtn()}`;
+  bindSound();
+  const miss = run.list.filter(it => it.picked !== 0);
+  $('#main').innerHTML = `<div class="result">
+    <div class="big">${ok} / ${n}</div>
+    <div class="msg">${msg}</div>
+    ${miss.length ? `<p class="sec">まちがえた問題</p><div class="miss">${miss.map(it => `<div><b>${esc(it.q.q)}</b>→ ${esc(it.q.choices[0])}</div>`).join('')}</div>` : ''}
+    <div class="stack">
+      ${miss.length ? '<button class="btn primary" id="again-miss">まちがえた問題だけもう一回</button>' : ''}
+      <button class="btn ${miss.length ? '' : 'primary'}" id="again">もう一回</button>
+      <button class="btn" id="home">コース一覧にもどる</button>
+    </div></div>`;
+  if(miss.length) $('#again-miss').onclick = () => {
+    run = { cid: run.cid, list: shuffle(miss).map(it => ({ q: it.q, order: shuffle([0, 1, 2, 3]), picked: null })), i: 0 };
+    ask();
+  };
+  $('#again').onclick = () => start(run.cid);
+  $('#home').onclick = home;
+  window.scrollTo(0, 0);
+}
+
+// ---- 確認ダイアログ ----
+function confirmDlg(text, yes, onYes, no = 'やめる'){
+  const d = document.createElement('div');
+  d.className = 'dlg';
+  d.innerHTML = `<div class="dlg-box"><b>${esc(text)}</b><div class="dlg-row"><button class="btn" data-a="no">${esc(no)}</button><button class="btn primary" data-a="yes">${esc(yes)}</button></div></div>`;
+  d.onclick = e => {
+    const a = e.target.closest('button')?.dataset.a;
+    if(a || e.target === d){ d.remove(); if(a === 'yes') onYes() }
+  };
+  document.body.appendChild(d);
+}
+
+home();
+</script>
