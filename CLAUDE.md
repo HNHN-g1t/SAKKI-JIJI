@@ -13,6 +13,8 @@
 
 main に push すると、Vercel（`vercel.json`）と GitHub Actions（`.github/workflows/pages.yml`）の両方が `tools/build_site.py` でビルドして公開する（1〜2分）。
 
+**コミットの作者は必ず `HNHN <821yas@gmail.com>` にする**（`git config user.name HNHN` / `git config user.email 821yas@gmail.com`）。Vercel の無料プランは、Vercel アカウントにいない作者のコミットを公開しない（数秒で failure になる）。
+
 ## 作業ルール
 
 - 質問されたら、まず質問に答える。制作・変更は、必要なら進めてよいか確認してから着手する。

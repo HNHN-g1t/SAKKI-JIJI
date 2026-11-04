@@ -21,4 +21,5 @@
 
 ## 最近の変更
 
+- 2026-11-04 Claude：Vercel と連携（https://sakki-jiji.vercel.app/）。コミット作者が Vercel アカウント外だと公開されないため、作者を HNHN に統一（CLAUDE.md に明記）
 - 2026-11-04 Claude：リポジトリ作成。SAKKI-MAN と同じ形式（apps/・tools/build_site.py・site/・vercel.json・GitHub Pages）で、時事ニュースクイズ v1 を追加（6コース36問。政治・世界・経済くらし・人口社会・文化スポーツ・〇〇周年。4択→解説→つながる知識、コースごとの最高点と👑、まちがえた問題だけ復習）
