@@ -23,6 +23,8 @@ for q in data["questions"]:
     ids.add(qid)
     if q.get("cat") not in cats:
         errors.append(f"{qid}: cat「{q.get('cat')}」がコースにない")
+    if q.get("area") not in ("jp", "world"):
+        errors.append(f"{qid}: area は jp か world")
     ch = q.get("choices", [])
     if len(ch) != 4 or len(set(ch)) != 4:
         errors.append(f"{qid}: 選択肢はちがう4つにする")

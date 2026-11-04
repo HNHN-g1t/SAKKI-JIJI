@@ -24,7 +24,8 @@ main に push すると、Vercel（`vercel.json`）と GitHub Actions（`.github
 
 ## 時事ニュースクイズ（apps/jiji-quiz）
 
-- 問題は `data/questions.json`。`choices` の先頭が正解（画面では毎回まぜる）。`when`＝ニュースの時期、`exp`＝解説、`link`＝つながる教科書知識、`src`＝[SOURCES.md](apps/jiji-quiz/SOURCES.md) の出典番号、`checked`＝確かめた日
+- 問題は `data/questions.json`。`choices` の先頭が正解（画面では毎回まぜる）。`when`＝ニュースの時期、`exp`＝解説、`link`＝つながる教科書知識、`src`＝[SOURCES.md](apps/jiji-quiz/SOURCES.md) の出典番号、`checked`＝確かめた日、`area`＝`jp`（日本国内）か `world`（世界）
+- 出題は **日本国内のできごとを重視**。「全部まぜて」は日本国内7問・世界3問（`template.html` の `ALL_WORLD`）。問題を足すときも日本国内を多めにする
 - **時事は事実の正確さが命**。問題を足すときは必ずWebなどで公表資料を確かめ、SOURCES.md に出典を足す。速報値と確定値がちがう数字は、どちらかを明記する。確かめられないものは入れない
 - `index.html` はビルドの出力。直接編集しない。`src/template.html` と `data/questions.json` を直す
 - ビルド（Windows は `py -3`、それ以外は `python3`）。問題データの形（4択が重複なし・コースの存在など）もここで確かめる:

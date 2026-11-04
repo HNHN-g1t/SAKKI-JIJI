@@ -135,6 +135,7 @@ const DATA = /*__DATA__*/null;
 const COURSES = DATA.courses;
 const QS = DATA.questions;
 const PER_ROUND = 10;   // 1回に出す問題数（コースの問題がそれより少なければ全部）
+const ALL_WORLD = 3;    // 「全部まぜて」の10問のうち世界のできごとの数（残りは日本国内。日本国内を重視）
 const KEY = 'sakki-jiji-v1';
 
 // ---- 記録（localStorage が使えなくても遊べる）----
@@ -189,7 +190,7 @@ function home(){
     <p class="sec">コースをえらぶ</p>
     <div class="courses">
       ${COURSES.map(c => `<button class="course" data-c="${c.id}"><div class="t"><b>${esc(c.name)}</b><span>${esc(c.sub)}</span></div>${rec(c.id)}</button>`).join('')}
-      <button class="course all" data-c="all"><div class="t"><b>全部まぜて</b><span>全コースからランダムに${PER_ROUND}問</span></div>${rec('all')}</button>
+      <button class="course all" data-c="all"><div class="t"><b>全部まぜて</b><span>全コースから${PER_ROUND}問（日本国内${PER_ROUND - ALL_WORLD}問・世界${ALL_WORLD}問）</span></div>${rec('all')}</button>
       ${missN ? `<button class="course" data-c="miss"><div class="t"><b>まちがえた問題</b><span>前にまちがえた問題だけ</span></div><div class="rec">${missN}問</div></button>` : ''}
     </div>
     <div class="foot"><button class="linkbtn" id="reset">記録を消す</button></div>
@@ -202,8 +203,17 @@ function home(){
 // ---- 出題 ----
 let run = null;
 function start(cid){
-  let pool = cid === 'all' ? QS : cid === 'miss' ? QS.filter(q => store.seen[q.id] === 0) : QS.filter(q => q.cat === cid);
-  const list = shuffle(pool).slice(0, PER_ROUND).map(q => {
+  let picked;
+  if(cid === 'all'){
+    // 日本国内を重視：世界 ALL_WORLD 問＋日本国内の残りをまぜる
+    const w = shuffle(QS.filter(q => q.area === 'world')).slice(0, ALL_WORLD);
+    const j = shuffle(QS.filter(q => q.area !== 'world')).slice(0, PER_ROUND - w.length);
+    picked = shuffle(w.concat(j));
+  }else{
+    const pool = cid === 'miss' ? QS.filter(q => store.seen[q.id] === 0) : QS.filter(q => q.cat === cid);
+    picked = shuffle(pool).slice(0, PER_ROUND);
+  }
+  const list = picked.map(q => {
     const order = shuffle([0, 1, 2, 3]);
     return { q, order, picked: null };
   });

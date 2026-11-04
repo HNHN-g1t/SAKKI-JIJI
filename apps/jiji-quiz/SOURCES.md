@@ -33,6 +33,7 @@
 | 27 | 2025年ワールドシリーズ ドジャース連覇、MVP山本由伸（日本人2人目） | [CNN](https://www.cnn.co.jp/showbiz/35239979.html)、[秋田魁新報](https://www.sakigake.jp/news/article/20251102CO0089/) |
 | 28 | 東京2025デフリンピック（2025年11月、日本初開催、100周年） | [中央区](https://www.city.chuo.lg.jp/a0015/deaflympics2025.html)、[JFA](https://www.jfa.jp/news/00035746/) |
 | 29 | アメリカ中間選挙（2026年11月3日）：争点はアフォーダビリティ（生活費）、民主党が下院の過半数（各社の予測・速報。上院は報道が分かれるため出題しない） | [CBS News](https://www.cbsnews.com/live-updates/house-election-results-2026/)、[NBC News](https://www.nbcnews.com/politics/2026-election/democrats-house-control-midterm-election-wins-trump-check-rcna603397)、[Northeastern](https://news.northeastern.edu/2026/11/03/midterm-election-results-analysis-2026/) |
+| 30 | アメリカ連邦議会のしくみ（上院100・各州2・任期6年・3分の1ずつ改選・条約承認と任命同意・議長は副大統領／下院435・人口比例・任期2年） | 教科書の基本事項（合衆国憲法第1条・第2条） |
 
 ## 出題しなかったもの（未確認）
 
