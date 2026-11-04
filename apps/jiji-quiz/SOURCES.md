@@ -32,6 +32,7 @@
 | 26 | 2026年大河ドラマ「豊臣兄弟！」（主人公 豊臣秀長） | [プレジデント](https://president.jp/articles/-/82248)、[大阪歴史博物館 特別展](https://www.tokyoartbeat.com/events/-/NHK-Taiga-Drama-Special-Exhibition-Brothers-in-Arms/osaka-museum-of-history/2026-07-08) |
 | 27 | 2025年ワールドシリーズ ドジャース連覇、MVP山本由伸（日本人2人目） | [CNN](https://www.cnn.co.jp/showbiz/35239979.html)、[秋田魁新報](https://www.sakigake.jp/news/article/20251102CO0089/) |
 | 28 | 東京2025デフリンピック（2025年11月、日本初開催、100周年） | [中央区](https://www.city.chuo.lg.jp/a0015/deaflympics2025.html)、[JFA](https://www.jfa.jp/news/00035746/) |
+| 29 | アメリカ中間選挙（2026年11月3日）：争点はアフォーダビリティ（生活費）、民主党が下院の過半数（各社の予測・速報。上院は報道が分かれるため出題しない） | [CBS News](https://www.cbsnews.com/live-updates/house-election-results-2026/)、[NBC News](https://www.nbcnews.com/politics/2026-election/democrats-house-control-midterm-election-wins-trump-check-rcna603397)、[Northeastern](https://news.northeastern.edu/2026/11/03/midterm-election-results-analysis-2026/) |
 
 ## 出題しなかったもの（未確認）
 
