@@ -25,6 +25,10 @@ for q in data["questions"]:
         errors.append(f"{qid}: cat「{q.get('cat')}」がコースにない")
     if q.get("area") not in ("jp", "world"):
         errors.append(f"{qid}: area は jp か world")
+    if "rank" in q and q["rank"] not in ("S", "A"):
+        errors.append(f"{qid}: rank は S か A")
+    if "tags" in q and not (isinstance(q["tags"], list) and all(isinstance(t, str) and t for t in q["tags"])):
+        errors.append(f"{qid}: tags は文字の配列")
     ch = q.get("choices", [])
     if len(ch) != 4 or len(set(ch)) != 4:
         errors.append(f"{qid}: 選択肢はちがう4つにする")

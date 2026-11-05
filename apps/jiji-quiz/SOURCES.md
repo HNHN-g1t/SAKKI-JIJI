@@ -34,6 +34,9 @@
 | 28 | 東京2025デフリンピック（2025年11月、日本初開催、100周年） | [中央区](https://www.city.chuo.lg.jp/a0015/deaflympics2025.html)、[JFA](https://www.jfa.jp/news/00035746/) |
 | 29 | アメリカ中間選挙（2026年11月3日）：争点はアフォーダビリティ（生活費）、民主党が下院の過半数（各社の予測・速報。上院は報道が分かれるため出題しない） | [CBS News](https://www.cbsnews.com/live-updates/house-election-results-2026/)、[NBC News](https://www.nbcnews.com/politics/2026-election/democrats-house-control-midterm-election-wins-trump-check-rcna603397)、[Northeastern](https://news.northeastern.edu/2026/11/03/midterm-election-results-analysis-2026/) |
 | 30 | アメリカ連邦議会のしくみ（上院100・各州2・任期6年・3分の1ずつ改選・条約承認と任命同意・議長は副大統領／下院435・人口比例・任期2年） | 教科書の基本事項（合衆国憲法第1条・第2条） |
+| 31 | 愛知・名古屋2026アジア競技大会（2026年9月19日〜10月4日、45の国と地域、メイン会場 名古屋市瑞穂公園陸上競技場、マスコット「ホノホン」＝炎＋シャチホコ）、アジアパラ（10月18〜24日、マスコット「ウズミン」） | [愛知県資料](https://www.pref.aichi.jp/uploaded/attachment/273657.pdf)、[名古屋市資料](https://www.city.nagoya.jp/shicho/cmsfiles/contents/0000061/61100/3-2_Aichi-Nagoya2026.pdf)、[アジアパラ組織委員会](https://asianparagames-2026.org/assets/file/tournament/pr/pr2.pdf)、[名古屋市中川区](https://www.city.nagoya.jp/nakagawa/profile/1022579/1048403/1048404.html)（公式サイト aichi-nagoya2026.org はこの環境から開けず） |
+| 32 | アジアパラ ゴールボール男子 決勝で中国に5-3、初の金メダル（2026年10月23日、豊橋市総合体育館） | [日本ゴールボール協会 プレスリリース](https://prtimes.jp/main/html/rd/p/000000128.000101312.html)、[中日新聞](https://www.chunichi.co.jp/article/1329424) |
+| 33 | アジアパラ 車いすラグビーの会場 ウィングアリーナ刈谷 | [刈谷市](https://www.city.kariya.lg.jp/_res/projects/default_project/_page_/001/006/627/r07asipara.pdf)、[日本パラリンピック委員会 大会概要](https://www.parasports.or.jp/paralympic/news/%E7%AC%AC5%E5%9B%9E%E3%82%A2%E3%82%B8%E3%82%A2%E3%83%91%E3%83%A9%E7%AB%B6%E6%8A%80%E5%A4%A7%E4%BC%9A%282026%E6%84%9B%E7%9F%A5%E3%83%BB%E5%90%8D%E5%8F%A4%E5%B1%8B%29%E3%80%90%E6%A6%82%E8%A6%81%E3%80%91.pdf) |
 
 ## 出題しなかったもの（未確認）
 
